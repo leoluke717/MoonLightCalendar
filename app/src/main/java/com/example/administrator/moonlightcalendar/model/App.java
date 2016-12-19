@@ -1,5 +1,6 @@
 package com.example.administrator.moonlightcalendar.model;
 
+import com.example.administrator.moonlightcalendar.Util.DateUtil;
 import com.example.administrator.moonlightcalendar.Util.MoonLightDBUtil;
 
 import java.util.ArrayList;
@@ -71,9 +72,11 @@ public class App {
         project.times = times;
         project.name = name;
 
+        //按订单日期出账
         if (createBillDay == 0 || payBillDay == 0) {
-
+            createIrregularBills(project);
         }
+        //按月出账日与还款日规律出账
         else {
             createRegularBills(project);
         }
@@ -82,27 +85,36 @@ public class App {
         projects.add(project);
     }
 
+    private void createIrregularBills(Project project) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(project.createDate);//项目开始的日期
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        for (int i = 0; i < project.times; i++) {
+            Bill bill = new Bill();
+            bill.from = project.name;
+            bill.fromApp = this.name;
+            bill.price = project.price / project.times;
+            bill.date = calendar.getTime();
+            bill.type = Bill.TYPE_DEBT;
+            bill.out = true;
+            bill.save();
+            DateUtil.monthAfter(calendar);
+            project.bills.add(bill);
+        }
+    }
+
     //固定日期还款的账单
     private void createRegularBills(Project project) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(project.createDate);//项目开始的日期
         int day = calendar.get(Calendar.DAY_OF_MONTH);
-        if (createBillDay > day) {//如交易日小于出账日，本月出账
-            calendar.set(Calendar.DAY_OF_MONTH, payBillDay);
-        } else {//如交易日大于出账日，下月出账
-            calendar.set(Calendar.DAY_OF_MONTH, payBillDay);
-            calendar.add(Calendar.MONTH, 1);
-            int month = calendar.get(Calendar.MONTH);
-            if (month == 1) {//判断是否跨年
-                calendar.add(Calendar.YEAR, 1);
-            }
+        calendar.set(Calendar.DAY_OF_MONTH, payBillDay);
+        if (createBillDay < day) {//如在出账日之后交易，下月出账
+            DateUtil.monthAfter(calendar);
         }
-        if (payBillDay < createBillDay) {//如还款日小于出账日，则推一个月 如25出 5还 11月26买的物品 1月5日还
-            calendar.add(Calendar.MONTH, 1);
-            int month = calendar.get(Calendar.MONTH);
-            if (month == 1) {//判断是否跨年
-                calendar.add(Calendar.YEAR, 1);
-            }
+        if (payBillDay < createBillDay) {//如出账日到还款日跨月，则再推一个月 如25出 5还 11月26买的物品 1月5日还
+            DateUtil.monthAfter(calendar);
         }
 
         for (int i = 0; i < project.times; i++) {
@@ -114,7 +126,7 @@ public class App {
             bill.type = Bill.TYPE_DEBT;
             bill.out = true;
             bill.save();
-            calendar.add(Calendar.DATE, 1);
+            calendar = DateUtil.monthAfter(calendar);
             project.bills.add(bill);
         }
     }

@@ -12,6 +12,9 @@ public class DateUtil {
 
     public static final int DAY_MILLIS = 24 * 60 * 60 * 1000;
 
+    /**
+     * 转化为时间string
+     * */
     public static String convertDateToString(long time) {
         Date date = new java.sql.Date(time*1000);
         SimpleDateFormat format;
@@ -24,6 +27,9 @@ public class DateUtil {
         return dateStr;
     }
 
+    /**
+     * 判断两个日期是否为同一天
+     * */
     public static boolean isTheSameDay(Date date1, Date date2) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date1);
@@ -38,6 +44,9 @@ public class DateUtil {
         return day1 == day2 && month1 == month2 && year1 == year2;
     }
 
+    /**
+     * 获取两个日期之间相隔的天数
+     * */
     public static int DifferOfDays(Date date1, Date date2) {
         Calendar cal1 = Calendar.getInstance();
         cal1.setTime(date1);
@@ -65,5 +74,46 @@ public class DateUtil {
             System.out.println("判断day2 - day1 : " + (day2 - day1));
             return day2 - day1;
         }
+    }
+
+    /**
+     * 获取当月月份的天数
+     * */
+    public static int getMonthDaysCount(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
+        return calendar.get(Calendar.DAY_OF_MONTH);
+    }
+
+    public static Calendar dayAfter(Calendar calendar) {
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        //日期归1说明到跨到了下个月
+        if (day == 1) {
+            calendar = monthAfter(calendar);
+        }
+        return calendar;
+    }
+
+    public static Calendar monthAfter(Calendar calendar) {
+        calendar.add(Calendar.MONTH, 1);
+        int month = calendar.get(Calendar.MONTH);
+        //月份归1说明到跨到了明年
+        if (month == 1) {
+            calendar.add(Calendar.YEAR, 1);
+        }
+        return calendar;
+    }
+
+    public static Calendar weekAfter(Calendar calendar) {
+        int day1 = calendar.get(Calendar.DAY_OF_MONTH);
+        calendar.add(Calendar.WEEK_OF_MONTH, 1);
+        int day2 = calendar.get(Calendar.DAY_OF_MONTH);
+        if (day1 > day2) {
+            monthAfter(calendar);
+        }
+        return calendar;
     }
 }
