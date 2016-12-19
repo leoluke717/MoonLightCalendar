@@ -71,8 +71,21 @@ public class App {
         project.times = times;
         project.name = name;
 
+        if (createBillDay == 0 || payBillDay == 0) {
+
+        }
+        else {
+            createRegularBills(project);
+        }
+
+        project.save();
+        projects.add(project);
+    }
+
+    //固定日期还款的账单
+    private void createRegularBills(Project project) {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(createDate);//项目开始的日期
+        calendar.setTime(project.createDate);//项目开始的日期
         int day = calendar.get(Calendar.DAY_OF_MONTH);
         if (createBillDay > day) {//如交易日小于出账日，本月出账
             calendar.set(Calendar.DAY_OF_MONTH, payBillDay);
@@ -92,11 +105,11 @@ public class App {
             }
         }
 
-        for (int i = 0; i < times; i++) {
+        for (int i = 0; i < project.times; i++) {
             Bill bill = new Bill();
-            bill.from = name;
+            bill.from = project.name;
             bill.fromApp = this.name;
-            bill.price = price / times;
+            bill.price = project.price / project.times;
             bill.date = calendar.getTime();
             bill.type = Bill.TYPE_DEBT;
             bill.out = true;
@@ -104,8 +117,6 @@ public class App {
             calendar.add(Calendar.DATE, 1);
             project.bills.add(bill);
         }
-        project.save();
-        projects.add(project);
     }
 
     public void save() {
