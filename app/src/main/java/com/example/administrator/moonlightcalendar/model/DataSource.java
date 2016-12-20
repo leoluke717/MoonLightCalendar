@@ -34,14 +34,14 @@ public class DataSource implements SQLiteTransactionListener {
                 @Override
                 public void run() {
                     MoonLightDBUtil.setTransactionListener(mDataSource);
-                    mDataSource.init();
+                    mDataSource.initFinance();
                 }
             }).start();
         }
         return mDataSource;
     }
 
-    private void init() {
+    private void initFinance() {
         Date date = Person.getInstance().getFirstDate();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);

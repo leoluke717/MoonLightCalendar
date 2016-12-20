@@ -88,8 +88,8 @@ public class App {
     private void createIrregularBills(Project project) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(project.createDate);//项目开始的日期
+        //日期是不是当月最后一天
         int day = calendar.get(Calendar.DAY_OF_MONTH);
-
         for (int i = 0; i < project.times; i++) {
             Bill bill = new Bill();
             bill.from = project.name;
@@ -100,6 +100,7 @@ public class App {
             bill.out = true;
             bill.save();
             DateUtil.monthAfter(calendar);
+            calendar.set(Calendar.DAY_OF_MONTH, Math.min(DateUtil.getMonthDaysCount(calendar.getTime()), day));
             project.bills.add(bill);
         }
     }
