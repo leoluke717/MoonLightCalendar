@@ -65,6 +65,11 @@ public class App {
     }
 
     public void createProject(String name, Date createDate, float price, int times) {
+        for (Project project : projects) {
+            if (project.getName().equals(name)) {
+                return;
+            }
+        }
         Project project = new Project();
         project.from = this.name;
         project.createDate = createDate;
@@ -127,8 +132,8 @@ public class App {
             bill.type = Bill.TYPE_DEBT;
             bill.out = true;
             bill.save();
-            calendar = DateUtil.monthAfter(calendar);
             project.bills.add(bill);
+            calendar = DateUtil.monthAfter(calendar);
         }
     }
 

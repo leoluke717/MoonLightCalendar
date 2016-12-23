@@ -18,7 +18,6 @@ public class MainApplication extends Application {
         super.onCreate();
         context = getApplicationContext();
         Person.getInstance();
-        DataSource.getInstance();
     }
 
     public static Context getContext() {

@@ -81,29 +81,27 @@ public class Person {
         if (mPerson == null) {
             mPerson = new Person();
             mPerson.init();
+            DataSource.init();
         }
         return mPerson;
     }
 
     private void init() {
-        long fd = mPreferences.getLong("firstDate", 0);
-        if (fd == 0) {
-            setFirstDate(new java.sql.Date(System.currentTimeMillis()));
-        } else {
-            firstDate = new java.sql.Date(fd);
-        }
-        if (payEachDay == 0) {
-            payEachDay = mPreferences.getFloat("payEachDay", 0);
-        }
-        if (originWealth == 0) {
-            originWealth = mPreferences.getFloat("originWealth", 0);
-        }
+        long fd = mPreferences.getLong("firstDate", System.currentTimeMillis());
+        firstDate = new java.sql.Date(fd);
+        payEachDay = mPreferences.getFloat("payEachDay", 0);
+        originWealth = mPreferences.getFloat("originWealth", 0);
         apps.clear();
         apps.addAll(MoonLightDBUtil.queryApp(null, null));
         cycleProjects.addAll(MoonLightDBUtil.queryCycleProject(null, null));
     }
 
     public void createCycleProject(String name, float price, int day, boolean out) {
+        for (CycleProject project : cycleProjects) {
+            if (project.getName().equals(name)) {
+                return;
+            }
+        }
         CycleProject cycleProject = new CycleProject();
         cycleProject.day = day;
         cycleProject.name = name;

@@ -150,6 +150,10 @@ public class MoonLightDBUtil {
     }
 
     public static void insert(Bill bill) {
+        if (!queryBills("_from=? and fromapp=?", new String[]{bill.from, bill.fromApp}).isEmpty()) {
+            update(bill);
+            return;
+        }
         db.beginTransactionWithListener(transactionListener);
         try {
             ContentValues contentValues = new ContentValues();
@@ -189,24 +193,39 @@ public class MoonLightDBUtil {
     /**
      * 删
      */
-    public static void deleteApp(String where, String[] args) {
+    public static void deleteApp(App app) {
+        String where = "name=?";
+        String[] args = new String[]{app.getName()};
+        db.delete("app", where, args);
+        db.delete("project", "_from=?", new String[]{app.getName()});
+        db.delete("bill", "fromapp=?", new String[]{app.getName()});
+    }
+
+    public static void deleteProject(App.Project project) {
+        String where = "name=?";
+        String[] args = new String[]{project.getName()};
+        db.delete("project", where, args);
+        db.delete("bill", "_from=? and fromapp", new String[]{project.getName(), project.getFrom()});
 
     }
 
-    public static void deleteProject(String where, String[] args) {
-
+    public static void deleteCycleProject(Person.CycleProject project) {
+        String where = "name=?";
+        String[] args = new String[]{project.getName()};
+        db.delete("cycle_project", where, args);
     }
 
-    public static void deleteCycleProject(String where, String[] args) {
-
-    }
-
-    public static void deleteBills(String where, String[] args) {
-
+    public static void deleteBills(Bill bill) {
+        String where = "_from=? and fromapp=?";
+        String[] args = new String[]{bill.from, bill.fromApp};
+        db.delete("bill", where, args);
     }
 
     public static void clear() {
-
+        db.delete("app", null, null);
+        db.delete("project", null, null);
+        db.delete("cycle_project", null, null);
+        db.delete("bill", null, null);
     }
 
     /**
@@ -257,6 +276,25 @@ public class MoonLightDBUtil {
             contentValues.put("out", project.isOut() ? 1 : 0);
             contentValues.put("day", project.getDay());
             db.update("cycle_project", contentValues, where, args);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public static void update(Bill bill) {
+        String where = "_from=? and fromapp=?";
+        String[] args = new String[]{bill.from, bill.fromApp};
+        db.beginTransactionWithListener(transactionListener);
+        try {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("_from", bill.from);
+            contentValues.put("fromapp", bill.fromApp);
+            contentValues.put("price", bill.price);
+            contentValues.put("date", bill.date.getTime());
+            contentValues.put("out", bill.out ? 1 : 0);
+            contentValues.put("type", bill.type);
+            db.update("bill", contentValues, where, args);
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();

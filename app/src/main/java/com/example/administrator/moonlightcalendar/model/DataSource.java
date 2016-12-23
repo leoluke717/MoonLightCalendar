@@ -17,17 +17,17 @@ import java.util.List;
  */
 
 public class DataSource implements SQLiteTransactionListener {
-    
+
     public static final String TAG = "DataSource";
 
     private static DataSource mDataSource;
-    public List<Finance> finances = new ArrayList<>();
+    public List<List<Finance>> financesList = new ArrayList<>();
 
     private DataSource() {
 
     }
 
-    public static DataSource getInstance() {
+    public static void init() {
         if (mDataSource == null) {
             mDataSource = new DataSource();
             new Thread(new Runnable() {
@@ -38,44 +38,105 @@ public class DataSource implements SQLiteTransactionListener {
                 }
             }).start();
         }
+    }
+
+    public static DataSource getInstance() {
+        init();
         return mDataSource;
     }
 
+    /**
+     * 根据月份创建空的每日账单
+     */
     private void initFinance() {
         Date date = Person.getInstance().getFirstDate();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        int differ = DateUtil.DifferOfDays(date, new java.sql.Date(System.currentTimeMillis()));
-        for (int i = 0; i < 365 + differ; i++) {
-            long newTime = date.getTime() + (24 * 60 * 60 * 1000) * i;
-            Finance finance = new Finance(new java.sql.Date(newTime));
-            finances.add(finance);
+        Calendar calendar1 = Calendar.getInstance();
+        calendar1.setTime(date);
+        Calendar calendar2 = Calendar.getInstance();
+        calendar2.setTimeInMillis(System.currentTimeMillis());
+        //获取初次使用的和现在的月份差距
+        int month = calendar2.get(Calendar.MONTH) + calendar2.get(Calendar.YEAR) * 12 -
+                calendar1.get(Calendar.MONTH) - calendar1.get(Calendar.YEAR) * 12;
+        //创建月份差+12个月的日历
+        for (int i = 0; i < 12 + month; i++) {
+            List<Finance> list = new ArrayList<>();
+            //从初始日期开始，根据月份天数创建账单
+            int max = DateUtil.getMonthDaysCount(calendar1.getTime());
+            for (int j = 1; j <= max; j++) {
+                Finance finance = new Finance(calendar1.getTime());
+                calendar1.set(Calendar.DAY_OF_MONTH, j);
+                finance.setReadOnly(false);
+                finance.setBillsMoney(0);
+                finance.setDate(calendar1.getTime());
+                list.add(finance);
+            }
+            //填充月初月末不满一周的账单
+            fillWeekFinance(list);
+            financesList.add(list);
+            DateUtil.monthAfter(calendar1);
         }
         refreshFinance();
     }
 
-//    临时计算总值
-    public List<Finance> refreshFinance() {
-        List<Bill> bills = MoonLightDBUtil.queryBills(null, null);
-        float originWealth = Person.getInstance().getOriginWealth();
-        for (Finance finance : finances) {
-            originWealth = originWealth - Person.getInstance().getPayEachDay();
-            for (Bill bill : bills) {
-                if (DateUtil.isTheSameDay(bill.date, finance.date)) {
-                    originWealth = bill.out ? originWealth - bill.price : originWealth + bill.price;
-                    bills.remove(bill);
-                } else {
-                    break;
-                }
-            }
-            finance.totalMoney = originWealth;
+    /**
+     * 填充月初和月末不满一周的日期账单
+     */
+    private void fillWeekFinance(List<Finance> finances) {
+        Calendar firstCalendar = Calendar.getInstance();
+        firstCalendar.setTime(finances.get(0).getDate());
+        int weekday = firstCalendar.get(Calendar.DAY_OF_WEEK);
+        for (int i = 0; i < weekday - 1; i++) {
+            firstCalendar.add(Calendar.DAY_OF_WEEK, -1);
+            Finance finance = new Finance(firstCalendar.getTime());
+            finance.readOnly = true;
+            finances.add(0, finance);
         }
-        return finances;
+
+        Calendar lastCalendar = Calendar.getInstance();
+        lastCalendar.setTime(finances.get(finances.size() - 1).getDate());
+        int lastweekday = lastCalendar.get(Calendar.DAY_OF_WEEK);
+        for (int i = 0; i < 7 - lastweekday; i++) {
+            lastCalendar.add(Calendar.DAY_OF_WEEK, 1);
+            Finance finance = new Finance(lastCalendar.getTime());
+            finance.readOnly = true;
+            finances.add(finance);
+        }
+    }
+
+    /**
+     * 临时计算账单的总金额
+     */
+    public List<List<Finance>> refreshFinance() {
+        //筛选初始日期之后的数据
+        long time = Person.getInstance().getFirstDate().getTime();
+        List<Bill> bills = MoonLightDBUtil.queryBills("date>?", new String[]{String.valueOf(time)});
+        float originWealth = Person.getInstance().getOriginWealth();
+        int i = 0;
+        for (List<Finance> finances : financesList) {
+            for (Finance finance : finances) {
+                //判断账单不是填充的并且账单日期大于起始使用日期
+                if (finance.readOnly || finance.date.getTime() < time) {
+                    continue;
+                }
+                originWealth = originWealth - Person.getInstance().getPayEachDay();
+                for (; i < bills.size(); i++) {
+                    Bill bill = bills.get(i);
+                    if (DateUtil.isTheSameDay(bill.date, finance.date)) {
+                        originWealth = bill.out ? originWealth - bill.price : originWealth + bill.price;
+                        finance.setBillsMoney(bill.out ? finance.getBillsMoney() - bill.price : finance.getBillsMoney() + bill.price);
+                    } else {
+                        break;
+                    }
+                }
+                finance.totalMoney = originWealth;
+            }
+        }
+        return financesList;
     }
 
     /**
      * 数据库事务监听
-     * */
+     */
     @Override
     public void onBegin() {
         Log.d(TAG, "onBegin: ");
@@ -84,7 +145,6 @@ public class DataSource implements SQLiteTransactionListener {
     @Override
     public void onCommit() {
         Log.d(TAG, "onCommit: ");
-        refreshFinance();
     }
 
     @Override

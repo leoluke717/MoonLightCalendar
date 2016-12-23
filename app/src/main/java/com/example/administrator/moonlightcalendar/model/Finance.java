@@ -21,10 +21,11 @@ import java.util.Map;
  * 每日
  */
 public class Finance {
+    float billsMoney;
     float totalMoney;
+    boolean readOnly;
     Date date;
     Map<String, List<Bill>> billsMap = new HashMap();
-    boolean readOnly;
 
     public Finance(Date date) {
         this.date = date;
@@ -35,7 +36,8 @@ public class Finance {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
         calendar.add(Calendar.DATE, 1);
-        boolean isAfter = date.after(java.sql.Date.valueOf(calendar.get(Calendar.YEAR)+"-"+calendar.get(Calendar.MONTH)+"-"+calendar.get(Calendar.DAY_OF_MONTH)));
+        int month = calendar.get(Calendar.MONTH)+1;
+        boolean isAfter = date.after(java.sql.Date.valueOf(calendar.get(Calendar.YEAR)+"-"+month+"-"+calendar.get(Calendar.DAY_OF_MONTH)));
         if (isAfter) {
             List<Bill> bills = new ArrayList<>();
             bills.add(createDayPay());
@@ -58,5 +60,45 @@ public class Finance {
             List<Bill> bills = MoonLightDBUtil.queryBills("fromapp=?", new String[]{app.getName()});
             billsMap.put(app.getName(), bills);
         }
+    }
+
+    public float getTotalMoney() {
+        return totalMoney;
+    }
+
+    public void setTotalMoney(float totalMoney) {
+        this.totalMoney = totalMoney;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public Map<String, List<Bill>> getBillsMap() {
+        return billsMap;
+    }
+
+    public void setBillsMap(Map<String, List<Bill>> billsMap) {
+        this.billsMap = billsMap;
+    }
+
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+    }
+
+    public float getBillsMoney() {
+        return billsMoney;
+    }
+
+    public void setBillsMoney(float billsMoney) {
+        this.billsMoney = billsMoney;
     }
 }

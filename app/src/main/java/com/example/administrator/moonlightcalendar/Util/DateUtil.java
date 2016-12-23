@@ -82,6 +82,7 @@ public class DateUtil {
     public static int getMonthDaysCount(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
+        calendar.add(Calendar.MONTH, 1);
         calendar.set(Calendar.DAY_OF_MONTH, 1);
         calendar.add(Calendar.DAY_OF_MONTH, -1);
         return calendar.get(Calendar.DAY_OF_MONTH);
@@ -89,31 +90,16 @@ public class DateUtil {
 
     public static Calendar dayAfter(Calendar calendar) {
         calendar.add(Calendar.DAY_OF_MONTH, 1);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        //日期归1说明到跨到了下个月
-        if (day == 1) {
-            calendar = monthAfter(calendar);
-        }
         return calendar;
     }
 
     public static Calendar monthAfter(Calendar calendar) {
         calendar.add(Calendar.MONTH, 1);
-        int month = calendar.get(Calendar.MONTH);
-        //月份归1说明到跨到了明年
-        if (month == 1) {
-            calendar.add(Calendar.YEAR, 1);
-        }
         return calendar;
     }
 
     public static Calendar weekAfter(Calendar calendar) {
-        int day1 = calendar.get(Calendar.DAY_OF_MONTH);
         calendar.add(Calendar.WEEK_OF_MONTH, 1);
-        int day2 = calendar.get(Calendar.DAY_OF_MONTH);
-        if (day1 > day2) {
-            monthAfter(calendar);
-        }
         return calendar;
     }
 }
