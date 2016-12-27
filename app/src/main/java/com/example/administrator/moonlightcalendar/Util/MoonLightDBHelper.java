@@ -23,12 +23,14 @@ public class MoonLightDBHelper extends SQLiteOpenHelper {
             db.execSQL("CREATE TABLE app(name TEXT PRIMARY KEY," +
                     "paybillday INTEGER," +
                     "createbillday INTEGER)");
-            db.execSQL("CREATE TABLE project(name TEXT PRIMARY KEY," +
+            db.execSQL("CREATE TABLE project(id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "name TEXT," +
                     "_from TEXT," +
                     "price REAL," +
                     "createdate INTEGER," +
                     "times INTEGER)");
-            db.execSQL("CREATE TABLE cycle_project(name TEXT PRIMARY KEY," +
+            db.execSQL("CREATE TABLE cycle_project(id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "name REAL," +
                     "price REAL," +
                     "out INTEGER," +
                     "day INTEGER)");
@@ -38,6 +40,7 @@ public class MoonLightDBHelper extends SQLiteOpenHelper {
                     "price REAL," +
                     "date INTEGER," +
                     "out INTEGER," +
+                    "pID INTEGER," +
                     "type INTEGER)");
             db.setTransactionSuccessful();
         }

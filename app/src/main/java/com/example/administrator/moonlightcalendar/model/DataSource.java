@@ -110,6 +110,7 @@ public class DataSource implements SQLiteTransactionListener {
         //筛选初始日期之后的数据
         long time = Person.getInstance().getFirstDate().getTime();
         List<Bill> bills = MoonLightDBUtil.queryBills("date>?", new String[]{String.valueOf(time)});
+        List<Person.CycleProject> cycleProjects = MoonLightDBUtil.queryCycleProject(null, null);
         float originWealth = Person.getInstance().getOriginWealth();
         int i = 0;
         for (List<Finance> finances : financesList) {
@@ -118,6 +119,7 @@ public class DataSource implements SQLiteTransactionListener {
                 if (finance.readOnly || finance.date.getTime() < time) {
                     continue;
                 }
+                finance.setBillsMoney(0);
                 originWealth = originWealth - Person.getInstance().getPayEachDay();
                 for (; i < bills.size(); i++) {
                     Bill bill = bills.get(i);
@@ -126,6 +128,19 @@ public class DataSource implements SQLiteTransactionListener {
                         finance.setBillsMoney(bill.out ? finance.getBillsMoney() - bill.price : finance.getBillsMoney() + bill.price);
                     } else {
                         break;
+                    }
+                }
+                for (Person.CycleProject cycleProject : cycleProjects) {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(finance.getDate());
+                    int day = calendar.get(Calendar.DAY_OF_MONTH);
+                    if (day == cycleProject.getDay()) {
+                        originWealth = cycleProject.isOut() ?
+                                originWealth - cycleProject.getPrice() :
+                                originWealth + cycleProject.getPrice();
+                        finance.setBillsMoney(cycleProject.isOut() ?
+                                finance.getBillsMoney() - cycleProject.getPrice() :
+                                finance.getBillsMoney() + cycleProject.getPrice());
                     }
                 }
                 finance.totalMoney = originWealth;

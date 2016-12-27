@@ -77,6 +77,7 @@ public class Person {
         if (mPreferences == null) {
             mPreferences = MainApplication.getContext().getSharedPreferences("person", Context.MODE_PRIVATE);
             MoonLightDBUtil.init(MainApplication.getContext());
+            MoonLightDBUtil.clear();
         }
         if (mPerson == null) {
             mPerson = new Person();
@@ -112,12 +113,12 @@ public class Person {
     }
 
     //生活花销
-    public void createLifeCost(boolean out, float price, String fromApp, String from, Date date) {
+    public void createLifeCost(boolean out, float price, String name, Date date) {
         Bill bill = new Bill();
         bill.out = out;
         bill.price = price;
-        bill.from = from;
-        bill.fromApp = fromApp;
+        bill.from = name;
+        bill.fromApp = "今日收支";
         bill.date = date;
         bill.save();
     }
@@ -133,10 +134,19 @@ public class Person {
      */
 
     public static class CycleProject {
+        private int id;
         private String name;
         private float price;
         private int day;
         private boolean out;
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
 
         public void setName(String name) {
             this.name = name;

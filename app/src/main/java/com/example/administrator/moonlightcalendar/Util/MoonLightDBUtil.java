@@ -13,6 +13,7 @@ import com.example.administrator.moonlightcalendar.model.Person;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.CRC32;
 
 /**
  * Created by Administrator on 2016/12/9 0009.
@@ -110,11 +111,6 @@ public class MoonLightDBUtil {
      * 增
      */
     public static void insert(App app) {
-        List<App> list = queryApp("name=?", new String[]{app.getName()});
-        if (!list.isEmpty()) {
-            update(app);
-            return;
-        }
         db.beginTransactionWithListener(transactionListener);
         try {
             ContentValues contentValues = new ContentValues();
@@ -129,11 +125,6 @@ public class MoonLightDBUtil {
     }
 
     public static void insert(App.Project project) {
-        List<App.Project> list = queryProject("name=?", new String[]{project.getName()});
-        if (!list.isEmpty()) {
-            update(project);
-            return;
-        }
         db.beginTransactionWithListener(transactionListener);
         try {
             ContentValues contentValues = new ContentValues();
@@ -150,10 +141,6 @@ public class MoonLightDBUtil {
     }
 
     public static void insert(Bill bill) {
-        if (!queryBills("_from=? and fromapp=?", new String[]{bill.from, bill.fromApp}).isEmpty()) {
-            update(bill);
-            return;
-        }
         db.beginTransactionWithListener(transactionListener);
         try {
             ContentValues contentValues = new ContentValues();
@@ -171,11 +158,6 @@ public class MoonLightDBUtil {
     }
 
     public static void insert(Person.CycleProject project) {
-        List<Person.CycleProject> list = queryCycleProject("name=?", new String[]{project.getName()});
-        if (!list.isEmpty()) {
-            update(project);
-            return;
-        }
         db.beginTransactionWithListener(transactionListener);
         try {
             ContentValues contentValues = new ContentValues();
@@ -194,38 +176,67 @@ public class MoonLightDBUtil {
      * 删
      */
     public static void deleteApp(App app) {
-        String where = "name=?";
-        String[] args = new String[]{app.getName()};
-        db.delete("app", where, args);
-        db.delete("project", "_from=?", new String[]{app.getName()});
-        db.delete("bill", "fromapp=?", new String[]{app.getName()});
+        try {
+            db.beginTransactionWithListener(transactionListener);
+            String where = "name=?";
+            String[] args = new String[]{app.getName()};
+            db.delete("app", where, args);
+            db.delete("project", "_from=?", new String[]{app.getName()});
+            db.delete("bill", "fromapp=?", new String[]{app.getName()});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
     public static void deleteProject(App.Project project) {
-        String where = "name=?";
-        String[] args = new String[]{project.getName()};
-        db.delete("project", where, args);
-        db.delete("bill", "_from=? and fromapp", new String[]{project.getName(), project.getFrom()});
-
+        try {
+            db.beginTransactionWithListener(transactionListener);
+            String where = "id=?";
+            String[] args = new String[]{String.valueOf(project.getId())};
+            db.delete("project", where, args);
+            db.delete("bill", "pID=?", new String[]{String.valueOf(project.getId())});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
     public static void deleteCycleProject(Person.CycleProject project) {
-        String where = "name=?";
-        String[] args = new String[]{project.getName()};
-        db.delete("cycle_project", where, args);
+        try {
+            db.beginTransactionWithListener(transactionListener);
+            String where = "id=?";
+            String[] args = new String[]{String.valueOf(project.getId())};
+            db.delete("cycle_project", where, args);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
     public static void deleteBills(Bill bill) {
-        String where = "_from=? and fromapp=?";
-        String[] args = new String[]{bill.from, bill.fromApp};
-        db.delete("bill", where, args);
+        try {
+            db.beginTransactionWithListener(transactionListener);
+            String where = "id=?";
+            String[] args = new String[]{String.valueOf(bill.id)};
+            db.delete("bill", where, args);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
     public static void clear() {
-        db.delete("app", null, null);
-        db.delete("project", null, null);
-        db.delete("cycle_project", null, null);
-        db.delete("bill", null, null);
+        try {
+            db.beginTransactionWithListener(transactionListener);
+            db.delete("app", null, null);
+            db.delete("project", null, null);
+            db.delete("cycle_project", null, null);
+            db.delete("bill", null, null);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
     /**
@@ -314,6 +325,8 @@ public class MoonLightDBUtil {
         if (cursor.moveToFirst()) {
             do {
                 Bill bill = new Bill();
+                bill.pID = cursor.getInt(cursor.getColumnIndex("pID"));
+                bill.id = cursor.getInt(cursor.getColumnIndex("id"));
                 bill.from = cursor.getString(cursor.getColumnIndex("_from"));
                 bill.fromApp = cursor.getString(cursor.getColumnIndex("fromapp"));
                 bill.price = cursor.getFloat(cursor.getColumnIndex("price"));
@@ -338,12 +351,13 @@ public class MoonLightDBUtil {
             do {
                 App.Project project = new App.Project();
                 project.setCreateDate(new Date(cursor.getLong(cursor.getColumnIndex("createdate"))));
+                project.setId(cursor.getInt(cursor.getColumnIndex("id")));
                 project.setName(cursor.getString(cursor.getColumnIndex("name")));
                 project.setFrom(cursor.getString(cursor.getColumnIndex("_from")));
                 project.setPrice(cursor.getFloat(cursor.getColumnIndex("price")));
                 project.setTimes(cursor.getInt(cursor.getColumnIndex("times")));
                 project.getBills().clear();
-                project.getBills().addAll(queryBills("_from=?", new String[]{project.getName()}));
+                project.getBills().addAll(queryBills("pID=?", new String[]{String.valueOf(project.getId())}));
                 projects.add(project);
             } while (cursor.moveToNext());
         }
@@ -381,6 +395,7 @@ public class MoonLightDBUtil {
         if (cursor.moveToFirst()) {
             do {
                 Person.CycleProject project = new Person.CycleProject();
+                project.setId(cursor.getInt(cursor.getColumnIndex("id")));
                 project.setName(cursor.getString(cursor.getColumnIndex("name")));
                 project.setPrice(cursor.getFloat(cursor.getColumnIndex("price")));
                 project.setDay(cursor.getInt(cursor.getColumnIndex("day")));

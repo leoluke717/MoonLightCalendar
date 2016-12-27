@@ -1,17 +1,18 @@
 package com.example.administrator.moonlightcalendar.Activity;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
+import android.view.ViewGroup;
 
 import com.example.administrator.moonlightcalendar.R;
-import com.example.administrator.moonlightcalendar.Util.MoonLightDBUtil;
 import com.example.administrator.moonlightcalendar.model.DataSource;
 import com.example.administrator.moonlightcalendar.model.Finance;
 import com.example.administrator.moonlightcalendar.model.Person;
@@ -25,8 +26,8 @@ import butterknife.ButterKnife;
 
 public class MainActivity extends BaseActivity {
 
-    @BindView(R.id.calendar_text)
-    TextView mCalendarText;
+    @BindView(R.id.calendar_view)
+    RecyclerView mCalendarView;
     private Calendar calendar;
 
     @Override
@@ -54,7 +55,6 @@ public class MainActivity extends BaseActivity {
 
     private void initData() {
 
-        MoonLightDBUtil.clear();
         Person person = Person.getInstance();
         person.setOriginWealth(1000);
         person.setPayEachDay(70);
@@ -75,36 +75,12 @@ public class MainActivity extends BaseActivity {
 
     public void refresh() {
         DataSource.getInstance().refreshFinance();
-        StringBuilder stringBuilder = new StringBuilder();
-        for (List<Finance> finances : DataSource.getInstance().financesList) {
-            for (Finance finance : finances) {
-                if (!finance.isReadOnly()) {
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTime(finance.getDate());
-                    stringBuilder.append(calendar.get(Calendar.YEAR) + "年");
-                    int month = calendar.get(Calendar.MONTH)+1;
-                    stringBuilder.append(month + "月\n");
-                    break;
-                }
-            }
-            for (Finance finance : finances) {
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(finance.getDate());
-                int month = calendar.get(Calendar.MONTH)+1;
-                stringBuilder.append(calendar.get(Calendar.YEAR) + "年" +
-                        month + "月" +
-                        calendar.get(Calendar.DAY_OF_MONTH) + "日");
-                stringBuilder.append("，星期" + calendar.get(Calendar.DAY_OF_WEEK));
-                stringBuilder.append("，总余额：" + finance.getTotalMoney());
-                stringBuilder.append("，账单：" + finance.getBillsMoney());
-                stringBuilder.append("\n");
-            }
-        }
-        mCalendarText.setText(stringBuilder.toString());
+        Person person = Person.getInstance();
     }
 
-    private void initView() {
 
+    private void initView() {
+        mCalendarView.setLayoutManager(new LinearLayoutManager(this));
     }
 
     @Override
@@ -127,5 +103,51 @@ public class MainActivity extends BaseActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public class CalendarAdapter extends RecyclerView.Adapter{
+
+        public static final int TYPE_SECTION = 1;
+        public static final int TYPE_CELL = 2;
+
+        private LayoutInflater mLayoutInflater;
+        private Context mContext;
+        private List<List<Finance>> mFinancesList;
+
+        public CalendarAdapter(Context context, List<List<Finance>> financesList) {
+            super();
+            this.mContext = context;
+            mLayoutInflater = LayoutInflater.from(context);
+            mFinancesList = financesList;
+        }
+
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            if (viewType == TYPE_CELL) {
+                return new CalendarViewHolder(mLayoutInflater.inflate(R.layout.month_item, parent));
+            }
+            return null;
+        }
+
+        @Override
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+            if (holder.getClass().equals(CalendarViewHolder.class)) {
+                ((CalendarViewHolder) holder).mFinances = mFinancesList.get(position);
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            return 0;
+        }
+
+        public class CalendarViewHolder extends RecyclerView.ViewHolder{
+
+            public List<Finance> mFinances;
+
+            public CalendarViewHolder(View itemView) {
+                super(itemView);
+            }
+        }
     }
 }

@@ -62,6 +62,7 @@ public class App {
 
     public void deleteProject(Project project) {
         projects.remove(project);
+        project.delete();
     }
 
     public void createProject(String name, Date createDate, float price, int times) {
@@ -90,6 +91,13 @@ public class App {
         projects.add(project);
     }
 
+    public void update() {
+
+    }
+
+    /**
+     * 创建无规律的账单，时付时还
+     * */
     private void createIrregularBills(Project project) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(project.createDate);//项目开始的日期
@@ -98,6 +106,7 @@ public class App {
         for (int i = 0; i < project.times; i++) {
             Bill bill = new Bill();
             bill.from = project.name;
+            bill.pID = project.id;
             bill.fromApp = this.name;
             bill.price = project.price / project.times;
             bill.date = calendar.getTime();
@@ -110,7 +119,10 @@ public class App {
         }
     }
 
-    //固定日期还款的账单
+    /**固定日期还款的账单
+     *
+     * @param project
+     */
     private void createRegularBills(Project project) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(project.createDate);//项目开始的日期
@@ -126,6 +138,7 @@ public class App {
         for (int i = 0; i < project.times; i++) {
             Bill bill = new Bill();
             bill.from = project.name;
+            bill.pID = project.id;
             bill.fromApp = this.name;
             bill.price = project.price / project.times;
             bill.date = calendar.getTime();
@@ -146,12 +159,21 @@ public class App {
      */
 
     public static class Project {
+        private int id;//唯一标示
         private float price;//总价
         private int times;//次数
         private String from;//来自什么软件,对应App的name
         private String name;//项目名
         private Date createDate;//起始时间
         private List<Bill> bills = new ArrayList<>();
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
 
         public void setPrice(float price) {
             this.price = price;
@@ -176,7 +198,6 @@ public class App {
         public void setBills(List<Bill> bills) {
             this.bills = bills;
         }
-
 
         public String getFrom() {
             return from;
@@ -210,5 +231,8 @@ public class App {
             MoonLightDBUtil.insert(this);
         }
 
+        public void delete() {
+            MoonLightDBUtil.deleteProject(this);
+        }
     }
 }

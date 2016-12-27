@@ -32,6 +32,8 @@ public class Bill {
      * from = "吃饭"
      * */
 
+    public int id;
+    public int pID;//project的ID
     public boolean out;//是否花出
     public int type;
     public float price;
