@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.administrator.moonlightcalendar.R;
+import com.example.administrator.moonlightcalendar.adapter.CalendarAdapter;
 import com.example.administrator.moonlightcalendar.model.DataSource;
 import com.example.administrator.moonlightcalendar.model.Finance;
 import com.example.administrator.moonlightcalendar.model.Person;
@@ -24,7 +25,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity implements RecyclerView.RecyclerListener {
 
     @BindView(R.id.calendar_view)
     RecyclerView mCalendarView;
@@ -81,6 +82,8 @@ public class MainActivity extends BaseActivity {
 
     private void initView() {
         mCalendarView.setLayoutManager(new LinearLayoutManager(this));
+        mCalendarView.setRecyclerListener(this);
+        mCalendarView.setAdapter(new CalendarAdapter(this, DataSource.getInstance().financesList));
     }
 
     @Override
@@ -105,49 +108,9 @@ public class MainActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public class CalendarAdapter extends RecyclerView.Adapter{
 
-        public static final int TYPE_SECTION = 1;
-        public static final int TYPE_CELL = 2;
+    @Override
+    public void onViewRecycled(RecyclerView.ViewHolder holder) {
 
-        private LayoutInflater mLayoutInflater;
-        private Context mContext;
-        private List<List<Finance>> mFinancesList;
-
-        public CalendarAdapter(Context context, List<List<Finance>> financesList) {
-            super();
-            this.mContext = context;
-            mLayoutInflater = LayoutInflater.from(context);
-            mFinancesList = financesList;
-        }
-
-        @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            if (viewType == TYPE_CELL) {
-                return new CalendarViewHolder(mLayoutInflater.inflate(R.layout.month_item, parent));
-            }
-            return null;
-        }
-
-        @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-            if (holder.getClass().equals(CalendarViewHolder.class)) {
-                ((CalendarViewHolder) holder).mFinances = mFinancesList.get(position);
-            }
-        }
-
-        @Override
-        public int getItemCount() {
-            return 0;
-        }
-
-        public class CalendarViewHolder extends RecyclerView.ViewHolder{
-
-            public List<Finance> mFinances;
-
-            public CalendarViewHolder(View itemView) {
-                super(itemView);
-            }
-        }
     }
 }

@@ -89,6 +89,7 @@ public class App {
 
         project.save();
         projects.add(project);
+
     }
 
     public void update() {

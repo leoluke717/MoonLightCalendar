@@ -110,6 +110,8 @@ public class Person {
         cycleProject.out = out;
         cycleProjects.add(cycleProject);
         cycleProject.save();
+        //刷新数据源
+        DataSource.getInstance().refreshFinance();
     }
 
     //生活花销
@@ -121,6 +123,8 @@ public class Person {
         bill.fromApp = "今日收支";
         bill.date = date;
         bill.save();
+        //刷新数据源
+        DataSource.getInstance().refreshFinance();
     }
 
     public void createNewApp(String name, int createBillDay, int payBillDay) {

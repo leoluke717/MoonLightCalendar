@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.example.administrator.moonlightcalendar.Util.DateUtil;
 import com.example.administrator.moonlightcalendar.Util.MoonLightDBUtil;
+import com.example.administrator.moonlightcalendar.adapter.CalendarAdapter;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -22,6 +23,7 @@ public class DataSource implements SQLiteTransactionListener {
 
     private static DataSource mDataSource;
     public List<List<Finance>> financesList = new ArrayList<>();
+    public CalendarAdapter mAdapter = null;
 
     private DataSource() {
 
