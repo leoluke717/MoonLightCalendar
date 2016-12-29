@@ -1,6 +1,11 @@
 package com.example.administrator.moonlightcalendar.model;
 
+import android.graphics.Color;
+import android.text.format.DateUtils;
+import android.util.SparseArray;
+
 import com.example.administrator.moonlightcalendar.Util.MoonLightDBUtil;
+import com.example.administrator.moonlightcalendar.Util.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -21,10 +26,14 @@ import java.util.Map;
  * 每日
  */
 public class Finance {
+
     float billsMoney;
     float totalMoney;
     boolean readOnly;
     Date date;
+    boolean isToday;
+    int financeColor;//账单等级颜色
+    int billsColor;
     Map<String, List<Bill>> billsMap = new HashMap();
 
     public Finance(Date date) {
@@ -33,15 +42,26 @@ public class Finance {
 
     //这里创建的都是临时不存数据库的
     private void fillList(Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.add(Calendar.DATE, 1);
-        int month = calendar.get(Calendar.MONTH)+1;
-        boolean isAfter = date.after(java.sql.Date.valueOf(calendar.get(Calendar.YEAR)+"-"+month+"-"+calendar.get(Calendar.DAY_OF_MONTH)));
+        isToday = DateUtils.isToday(date.getTime());
+        boolean isAfter = date.after(new java.sql.Date(System.currentTimeMillis())) && isToday;
         if (isAfter) {
             List<Bill> bills = new ArrayList<>();
             bills.add(createDayPay());
             billsMap.put("预计每日消费", bills);
+        }
+    }
+
+    public int getColor(float totalMoney) {
+        if (totalMoney < 0) {
+            return Color.rgb(255, 0, 0);
+        } else if (totalMoney < 100) {
+            return Color.rgb(255, 99, 71);
+        } else if (totalMoney < 500) {
+            return Color.rgb(184, 134, 11);
+        } else if (totalMoney < 2000) {
+            return Color.rgb(107, 142, 35);
+        } else {
+            return Color.rgb(34, 139, 34);
         }
     }
 
@@ -100,5 +120,29 @@ public class Finance {
 
     public void setBillsMoney(float billsMoney) {
         this.billsMoney = billsMoney;
+    }
+
+    public boolean isToday() {
+        return isToday;
+    }
+
+    public void setToday(boolean today) {
+        isToday = today;
+    }
+
+    public int getFinanceColor() {
+        return financeColor;
+    }
+
+    public void setFinanceColor(int financeColor) {
+        this.financeColor = financeColor;
+    }
+
+    public int getBillsColor() {
+        return billsColor;
+    }
+
+    public void setBillsColor(int billsColor) {
+        this.billsColor = billsColor;
     }
 }

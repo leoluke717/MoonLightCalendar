@@ -1,6 +1,8 @@
 package com.example.administrator.moonlightcalendar.adapter;
 
 import android.content.Context;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +14,7 @@ import com.example.administrator.moonlightcalendar.model.Finance;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -29,12 +32,25 @@ public class CalendarAdapter extends RecyclerView.Adapter {
     private LayoutInflater mLayoutInflater;
     private Context mContext;
     private List<List<Finance>> mFinancesList;
+    private List<Date> mDates = new ArrayList<>();
+    private List<MonthAdapter> monthAdapters = new ArrayList<>();
 
     public CalendarAdapter(Context context, List<List<Finance>> financesList) {
         super();
         this.mContext = context;
         mLayoutInflater = LayoutInflater.from(context);
         mFinancesList = financesList;
+        for (int p = 0; p < financesList.size(); p++) {
+            List<Finance> finances = mFinancesList.get(p);
+            for (Finance finance : finances) {
+                if (!finance.isReadOnly()) {
+                    mDates.add(finance.getDate());
+                    break;
+                }
+            }
+            MonthAdapter monthAdapter = new MonthAdapter(mContext, finances);
+            monthAdapters.add(monthAdapter);
+        }
     }
 
     @Override
@@ -48,19 +64,12 @@ public class CalendarAdapter extends RecyclerView.Adapter {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        if (holder.getClass().equals(CalendarViewHolder.class)) {
-            ((CalendarViewHolder) holder).mFinances = mFinancesList.get(position / 2);
+        if (holder instanceof CalendarViewHolder) {
+            ((CalendarViewHolder) holder).setFinances(mFinancesList.get(position / 2));
         }
-        if (holder.getClass().equals(MonthViewHolder.class)) {
-            Date date = null;
-            List<Finance> finances = mFinancesList.get(position / 2);
-            for (Finance finance : finances) {
-                if (!finance.isReadOnly()) {
-                    date = finance.getDate();
-                    break;
-                }
-            }
-            ((MonthViewHolder) holder).setDate(date);
+        if (holder instanceof MonthViewHolder) {
+
+            ((MonthViewHolder) holder).setDate(mDates.get(position / 2));
         }
     }
 
@@ -75,23 +84,47 @@ public class CalendarAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemViewType(int position) {
-        if (position%2 == 0) {
+        if (position % 2 == 0) {
             return TYPE_SECTION;
-        }
-        else {
+        } else {
             return TYPE_CELL;
         }
     }
 
+    /**
+     * 网格视图的viewHolder
+     */
     public class CalendarViewHolder extends RecyclerView.ViewHolder {
 
-        public List<Finance> mFinances;
+        @BindView(R.id.month_recycler)
+        RecyclerView monthRecycler;
 
         public CalendarViewHolder(View itemView) {
             super(itemView);
+            ButterKnife.bind(this, itemView);
+            monthRecycler.addItemDecoration(new DividerItemDecoration(mContext, DividerItemDecoration.HORIZONTAL));
+            monthRecycler.addItemDecoration(new DividerItemDecoration(mContext, DividerItemDecoration.VERTICAL));
+        }
+
+
+        public void setFinances(List<Finance> finances) {
+            if (monthRecycler.getLayoutManager() == null) {
+                monthRecycler.setLayoutManager(new GridLayoutManager(mContext, 7));
+            }
+            MonthAdapter adapter = (MonthAdapter) monthRecycler.getAdapter();
+            if (adapter == null) {
+                monthRecycler.setAdapter(new MonthAdapter(mContext, finances));
+            }
+            else {
+                adapter.setFinances(finances);
+                adapter.notifyDataSetChanged();
+            }
         }
     }
 
+    /**
+     * 头视图的viewHolder
+     */
     public class MonthViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.date_text)

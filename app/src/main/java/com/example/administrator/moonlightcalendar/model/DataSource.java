@@ -1,6 +1,7 @@
 package com.example.administrator.moonlightcalendar.model;
 
 import android.database.sqlite.SQLiteTransactionListener;
+import android.graphics.Color;
 import android.util.Log;
 
 import com.example.administrator.moonlightcalendar.Util.DateUtil;
@@ -119,6 +120,7 @@ public class DataSource implements SQLiteTransactionListener {
             for (Finance finance : finances) {
                 //判断账单不是填充的并且账单日期大于起始使用日期
                 if (finance.readOnly || finance.date.getTime() < time) {
+                    finance.setFinanceColor(Color.rgb(255, 255, 255));
                     continue;
                 }
                 finance.setBillsMoney(0);
@@ -146,6 +148,8 @@ public class DataSource implements SQLiteTransactionListener {
                     }
                 }
                 finance.totalMoney = originWealth;
+                finance.financeColor = finance.getColor(finance.totalMoney);
+                finance.billsColor = finance.getColor(finance.billsMoney < 0 ? -1 : 3000);
             }
         }
         return financesList;
