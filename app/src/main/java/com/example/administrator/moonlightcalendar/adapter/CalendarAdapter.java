@@ -1,6 +1,7 @@
 package com.example.administrator.moonlightcalendar.adapter;
 
 import android.content.Context;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -33,7 +34,7 @@ public class CalendarAdapter extends RecyclerView.Adapter {
     private Context mContext;
     private List<List<Finance>> mFinancesList;
     private List<Date> mDates = new ArrayList<>();
-    private List<MonthAdapter> monthAdapters = new ArrayList<>();
+    private List<DayTableAdapter> mDayTableAdapters = new ArrayList<>();
 
     public CalendarAdapter(Context context, List<List<Finance>> financesList) {
         super();
@@ -48,28 +49,28 @@ public class CalendarAdapter extends RecyclerView.Adapter {
                     break;
                 }
             }
-            MonthAdapter monthAdapter = new MonthAdapter(mContext, finances);
-            monthAdapters.add(monthAdapter);
+            DayTableAdapter dayTableAdapter = new DayTableAdapter(mContext, finances);
+            mDayTableAdapters.add(dayTableAdapter);
         }
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == TYPE_CELL) {
-            return new CalendarViewHolder(mLayoutInflater.inflate(R.layout.month_item, parent, false));
+            return new DayTableViewHolder(mLayoutInflater.inflate(R.layout.month_item, parent, false));
         } else {
-            return new MonthViewHolder(mLayoutInflater.inflate(R.layout.month_title_item, parent, false));
+            return new TitleViewHolder(mLayoutInflater.inflate(R.layout.month_title_item, parent, false));
         }
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        if (holder instanceof CalendarViewHolder) {
-            ((CalendarViewHolder) holder).setFinances(mFinancesList.get(position / 2));
+        if (holder instanceof DayTableViewHolder) {
+            ((DayTableViewHolder) holder).setFinances(mFinancesList.get(position / 2));
         }
-        if (holder instanceof MonthViewHolder) {
+        if (holder instanceof TitleViewHolder) {
 
-            ((MonthViewHolder) holder).setDate(mDates.get(position / 2));
+            ((TitleViewHolder) holder).setDate(mDates.get(position / 2));
         }
     }
 
@@ -94,28 +95,27 @@ public class CalendarAdapter extends RecyclerView.Adapter {
     /**
      * 网格视图的viewHolder
      */
-    public class CalendarViewHolder extends RecyclerView.ViewHolder {
+    public class DayTableViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.month_recycler)
         RecyclerView monthRecycler;
 
-        public CalendarViewHolder(View itemView) {
+        public DayTableViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
             monthRecycler.addItemDecoration(new DividerItemDecoration(mContext, DividerItemDecoration.HORIZONTAL));
             monthRecycler.addItemDecoration(new DividerItemDecoration(mContext, DividerItemDecoration.VERTICAL));
+            monthRecycler.setLayoutManager(new GridLayoutManager(mContext, 7));
+            monthRecycler.setHasFixedSize(true);
         }
 
 
         public void setFinances(List<Finance> finances) {
-            if (monthRecycler.getLayoutManager() == null) {
-                monthRecycler.setLayoutManager(new GridLayoutManager(mContext, 7));
-            }
-            MonthAdapter adapter = (MonthAdapter) monthRecycler.getAdapter();
+            DayTableAdapter adapter = (DayTableAdapter) monthRecycler.getAdapter();
             if (adapter == null) {
-                monthRecycler.setAdapter(new MonthAdapter(mContext, finances));
-            }
-            else {
+                monthRecycler.setAdapter(new DayTableAdapter(mContext, finances));
+                monthRecycler.setItemAnimator(new DefaultItemAnimator());
+            } else {
                 adapter.setFinances(finances);
                 adapter.notifyDataSetChanged();
             }
@@ -125,14 +125,14 @@ public class CalendarAdapter extends RecyclerView.Adapter {
     /**
      * 头视图的viewHolder
      */
-    public class MonthViewHolder extends RecyclerView.ViewHolder {
+    public class TitleViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.date_text)
         TextView dateText;
 
         private Date date;
 
-        public MonthViewHolder(View itemView) {
+        public TitleViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }

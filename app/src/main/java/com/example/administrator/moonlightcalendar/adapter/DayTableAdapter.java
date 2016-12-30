@@ -2,6 +2,7 @@ package com.example.administrator.moonlightcalendar.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,13 +22,13 @@ import butterknife.ButterKnife;
  * Created by Administrator on 2016/12/28 0028.
  */
 
-public class MonthAdapter extends RecyclerView.Adapter {
+public class DayTableAdapter extends RecyclerView.Adapter {
 
     private LayoutInflater mLayoutInflater;
     private Context mContext;
     private List<Finance> mFinances;
 
-    public MonthAdapter(Context context, List<Finance> finances) {
+    public DayTableAdapter(Context context, List<Finance> finances) {
         mContext = context;
         mLayoutInflater = LayoutInflater.from(context);
         mFinances = finances;
@@ -80,10 +81,10 @@ public class MonthAdapter extends RecyclerView.Adapter {
             calendar.setTime(finance.getDate());
             dayText.setText(String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)));
             dayText.setTextColor(finance.getFinanceColor());
+            dayText.setVisibility(finance.isReadOnly() ? View.INVISIBLE : View.VISIBLE);
             mBillText.setText(String.valueOf(finance.getBillsMoney()));
-            mBillText.setTextColor(finance.getBillsColor());
+            mBillText.setTextColor(ContextCompat.getColor(mContext, R.color.cardview_dark_background));
             mBillText.setVisibility(finance.getBillsMoney() == 0 ? View.INVISIBLE : View.VISIBLE);
-            itemView.setBackgroundColor(finance.isReadOnly() ? Color.rgb(169, 169, 169) : Color.rgb(255, 255, 255));
         }
     }
 }

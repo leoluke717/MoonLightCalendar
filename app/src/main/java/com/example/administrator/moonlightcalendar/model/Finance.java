@@ -27,14 +27,14 @@ import java.util.Map;
  */
 public class Finance {
 
-    float billsMoney;
-    float totalMoney;
-    boolean readOnly;
-    Date date;
-    boolean isToday;
+    float billsMoney;//账单总金额
+    float totalMoney;//目前剩余金额
+    boolean readOnly;//是否为填充的视图，填充不显示
+    boolean isToday;//是否为今天
     int financeColor;//账单等级颜色
-    int billsColor;
-    Map<String, List<Bill>> billsMap = new HashMap();
+    int billsColor;//账单金额颜色，支出为红，收入为绿
+    Date date;
+    Map<String, List<Bill>> billsMap = new HashMap();//账单表
 
     public Finance(Date date) {
         this.date = date;
