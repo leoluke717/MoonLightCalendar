@@ -4,8 +4,8 @@ import android.database.sqlite.SQLiteTransactionListener;
 import android.graphics.Color;
 import android.util.Log;
 
-import com.example.administrator.moonlightcalendar.Util.DateUtil;
-import com.example.administrator.moonlightcalendar.Util.MoonLightDBUtil;
+import com.example.administrator.moonlightcalendar.Util.myUtil.DateUtil;
+import com.example.administrator.moonlightcalendar.Util.myUtil.MoonLightDBUtil;
 import com.example.administrator.moonlightcalendar.adapter.CalendarAdapter;
 
 import java.util.ArrayList;
@@ -66,11 +66,11 @@ public class DataSource implements SQLiteTransactionListener {
             //从初始日期开始，根据月份天数创建账单
             int max = DateUtil.getMonthDaysCount(calendar1.getTime());
             for (int j = 1; j <= max; j++) {
-                Finance finance = new Finance(calendar1.getTime());
+                Finance finance = new Finance(DateUtil.date2String(calendar1.getTime()));
                 calendar1.set(Calendar.DAY_OF_MONTH, j);
                 finance.setReadOnly(false);
                 finance.setBillsMoney(0);
-                finance.setDate(calendar1.getTime());
+                finance.setDate(DateUtil.date2String(calendar1.getTime()));
                 list.add(finance);
             }
             //填充月初月末不满一周的账单
@@ -86,21 +86,21 @@ public class DataSource implements SQLiteTransactionListener {
      */
     private void fillWeekFinance(List<Finance> finances) {
         Calendar firstCalendar = Calendar.getInstance();
-        firstCalendar.setTime(finances.get(0).getDate());
+        firstCalendar.setTime(DateUtil.string2Date(finances.get(0).getDate()));
         int weekday = firstCalendar.get(Calendar.DAY_OF_WEEK);
         for (int i = 0; i < weekday - 1; i++) {
             firstCalendar.add(Calendar.DAY_OF_WEEK, -1);
-            Finance finance = new Finance(firstCalendar.getTime());
+            Finance finance = new Finance(DateUtil.date2String(firstCalendar.getTime()));
             finance.readOnly = true;
             finances.add(0, finance);
         }
 
         Calendar lastCalendar = Calendar.getInstance();
-        lastCalendar.setTime(finances.get(finances.size() - 1).getDate());
+        lastCalendar.setTime(DateUtil.string2Date(finances.get(finances.size() - 1).getDate()));
         int lastweekday = lastCalendar.get(Calendar.DAY_OF_WEEK);
         for (int i = 0; i < 7 - lastweekday; i++) {
             lastCalendar.add(Calendar.DAY_OF_WEEK, 1);
-            Finance finance = new Finance(lastCalendar.getTime());
+            Finance finance = new Finance(DateUtil.date2String(lastCalendar.getTime()));
             finance.readOnly = true;
             finances.add(finance);
         }
@@ -112,22 +112,23 @@ public class DataSource implements SQLiteTransactionListener {
     public List<List<Finance>> refreshFinance() {
         //筛选初始日期之后的数据
         long time = Person.getInstance().getFirstDate().getTime();
-        List<Bill> bills = MoonLightDBUtil.queryBills("date>?", new String[]{String.valueOf(time)});
+        List<Bill> bills = MoonLightDBUtil.queryBills("time>?", new String[]{String.valueOf(time)}, null);
         List<Person.CycleProject> cycleProjects = MoonLightDBUtil.queryCycleProject(null, null);
         float originWealth = Person.getInstance().getOriginWealth();
         int i = 0;
         for (List<Finance> finances : financesList) {
             for (Finance finance : finances) {
-                //判断账单不是填充的并且账单日期大于起始使用日期
-                if (finance.readOnly || finance.date.getTime() < time) {
-                    finance.setFinanceColor(Color.rgb(255, 255, 255));
+                //判断账单不是填充的或账单日期小于起始使用日期并且不是同一天
+                if (finance.readOnly ||
+                        (DateUtil.string2Date(finance.date).getTime() < time &&
+                                !finance.date.equals(DateUtil.date2String(new java.sql.Date(time))))) {
                     continue;
                 }
                 finance.setBillsMoney(0);
                 originWealth = originWealth - Person.getInstance().getPayEachDay();
                 for (; i < bills.size(); i++) {
                     Bill bill = bills.get(i);
-                    if (DateUtil.isTheSameDay(bill.date, finance.date)) {
+                    if (bill.date.equals(finance.date)) {
                         originWealth = bill.out ? originWealth - bill.price : originWealth + bill.price;
                         finance.setBillsMoney(bill.out ? finance.getBillsMoney() - bill.price : finance.getBillsMoney() + bill.price);
                     } else {
@@ -136,7 +137,7 @@ public class DataSource implements SQLiteTransactionListener {
                 }
                 for (Person.CycleProject cycleProject : cycleProjects) {
                     Calendar calendar = Calendar.getInstance();
-                    calendar.setTime(finance.getDate());
+                    calendar.setTime(DateUtil.string2Date(finance.getDate()));
                     int day = calendar.get(Calendar.DAY_OF_MONTH);
                     if (day == cycleProject.getDay()) {
                         originWealth = cycleProject.isOut() ?

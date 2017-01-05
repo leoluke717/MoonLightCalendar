@@ -1,6 +1,6 @@
 package com.example.administrator.moonlightcalendar.model;
 
-import com.example.administrator.moonlightcalendar.Util.MoonLightDBUtil;
+import com.example.administrator.moonlightcalendar.Util.myUtil.MoonLightDBUtil;
 
 import java.util.Date;
 
@@ -39,7 +39,8 @@ public class Bill {
     public float price;
     public String fromApp;//来自哪个软件，可以为空，在debt的时候有效
     public String from;//来自哪个项目，对应Project的name
-    public Date date;
+    public String date;
+    public long time;
 
 //    存数据库
     public void save() {

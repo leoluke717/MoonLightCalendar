@@ -1,8 +1,9 @@
 package com.example.administrator.moonlightcalendar.model;
 
-import com.example.administrator.moonlightcalendar.Util.DateUtil;
-import com.example.administrator.moonlightcalendar.Util.MoonLightDBUtil;
+import com.example.administrator.moonlightcalendar.Util.myUtil.DateUtil;
+import com.example.administrator.moonlightcalendar.Util.myUtil.MoonLightDBUtil;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -73,7 +74,7 @@ public class App {
         }
         Project project = new Project();
         project.from = this.name;
-        project.createDate = createDate;
+        project.createDate = DateUtil.date2String(createDate);
         project.price = price;
         project.times = times;
         project.name = name;
@@ -101,7 +102,7 @@ public class App {
      * */
     private void createIrregularBills(Project project) {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(project.createDate);//项目开始的日期
+        calendar.setTime(DateUtil.string2Date(project.createDate));//项目开始的日期
         //日期是不是当月最后一天
         int day = calendar.get(Calendar.DAY_OF_MONTH);
         for (int i = 0; i < project.times; i++) {
@@ -109,8 +110,12 @@ public class App {
             bill.from = project.name;
             bill.pID = project.id;
             bill.fromApp = this.name;
-            bill.price = project.price / project.times;
-            bill.date = calendar.getTime();
+            float price = project.price / project.times;
+            BigDecimal b = new BigDecimal(price);
+            price = b.setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
+            bill.price = price;
+            bill.date = DateUtil.date2String(calendar.getTime());
+            bill.time = calendar.getTimeInMillis();
             bill.type = Bill.TYPE_DEBT;
             bill.out = true;
             bill.save();
@@ -126,7 +131,7 @@ public class App {
      */
     private void createRegularBills(Project project) {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(project.createDate);//项目开始的日期
+        calendar.setTime(DateUtil.string2Date(project.createDate));//项目开始的日期
         int day = calendar.get(Calendar.DAY_OF_MONTH);
         calendar.set(Calendar.DAY_OF_MONTH, payBillDay);
         if (createBillDay < day) {//如在出账日之后交易，下月出账
@@ -141,8 +146,12 @@ public class App {
             bill.from = project.name;
             bill.pID = project.id;
             bill.fromApp = this.name;
-            bill.price = project.price / project.times;
-            bill.date = calendar.getTime();
+            float price = project.price / project.times;
+            BigDecimal b = new BigDecimal(price);
+            price = b.setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
+            bill.price = price;
+            bill.date = DateUtil.date2String(calendar.getTime());
+            bill.time = calendar.getTimeInMillis();
             bill.type = Bill.TYPE_DEBT;
             bill.out = true;
             bill.save();
@@ -165,7 +174,7 @@ public class App {
         private int times;//次数
         private String from;//来自什么软件,对应App的name
         private String name;//项目名
-        private Date createDate;//起始时间
+        private String createDate;//起始时间
         private List<Bill> bills = new ArrayList<>();
 
         public int getId() {
@@ -192,7 +201,7 @@ public class App {
             this.name = name;
         }
 
-        public void setCreateDate(Date createDate) {
+        public void setCreateDate(String createDate) {
             this.createDate = createDate;
         }
 
@@ -208,7 +217,7 @@ public class App {
             return name;
         }
 
-        public Date getCreateDate() {
+        public String getCreateDate() {
             return createDate;
         }
 

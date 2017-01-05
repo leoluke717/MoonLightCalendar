@@ -11,7 +11,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.administrator.moonlightcalendar.R;
+import com.example.administrator.moonlightcalendar.Util.myUtil.DateUtil;
 import com.example.administrator.moonlightcalendar.model.Finance;
+import com.example.administrator.moonlightcalendar.other.MyItemDecoration;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -25,7 +27,11 @@ import butterknife.ButterKnife;
 /**
  * 日历适配器
  */
-public class CalendarAdapter extends RecyclerView.Adapter {
+public class CalendarAdapter extends RecyclerView.Adapter{
+
+    public interface onItemClickListener {
+        abstract void onClick(int section, int position);
+    }
 
     public static final int TYPE_SECTION = 1;
     public static final int TYPE_CELL = 2;
@@ -35,6 +41,11 @@ public class CalendarAdapter extends RecyclerView.Adapter {
     private List<List<Finance>> mFinancesList;
     private List<Date> mDates = new ArrayList<>();
     private List<DayTableAdapter> mDayTableAdapters = new ArrayList<>();
+    private onItemClickListener mOnItemClickListener;
+
+    public void setOnItemClickListener(onItemClickListener onItemClickListener) {
+        mOnItemClickListener = onItemClickListener;
+    }
 
     public CalendarAdapter(Context context, List<List<Finance>> financesList) {
         super();
@@ -45,7 +56,7 @@ public class CalendarAdapter extends RecyclerView.Adapter {
             List<Finance> finances = mFinancesList.get(p);
             for (Finance finance : finances) {
                 if (!finance.isReadOnly()) {
-                    mDates.add(finance.getDate());
+                    mDates.add(DateUtil.string2Date(finance.getDate()));
                     break;
                 }
             }
@@ -67,6 +78,7 @@ public class CalendarAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof DayTableViewHolder) {
             ((DayTableViewHolder) holder).setFinances(mFinancesList.get(position / 2));
+            holder.itemView.setTag(position/2);
         }
         if (holder instanceof TitleViewHolder) {
 
@@ -95,7 +107,7 @@ public class CalendarAdapter extends RecyclerView.Adapter {
     /**
      * 网格视图的viewHolder
      */
-    public class DayTableViewHolder extends RecyclerView.ViewHolder {
+    public class DayTableViewHolder extends RecyclerView.ViewHolder implements DayTableAdapter.DayOnClickListener{
 
         @BindView(R.id.month_recycler)
         RecyclerView monthRecycler;
@@ -103,8 +115,8 @@ public class CalendarAdapter extends RecyclerView.Adapter {
         public DayTableViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-            monthRecycler.addItemDecoration(new DividerItemDecoration(mContext, DividerItemDecoration.HORIZONTAL));
-            monthRecycler.addItemDecoration(new DividerItemDecoration(mContext, DividerItemDecoration.VERTICAL));
+            monthRecycler.addItemDecoration(new MyItemDecoration(mContext, DividerItemDecoration.HORIZONTAL));
+            monthRecycler.addItemDecoration(new MyItemDecoration(mContext, DividerItemDecoration.VERTICAL));
             monthRecycler.setLayoutManager(new GridLayoutManager(mContext, 7));
             monthRecycler.setHasFixedSize(true);
         }
@@ -113,12 +125,19 @@ public class CalendarAdapter extends RecyclerView.Adapter {
         public void setFinances(List<Finance> finances) {
             DayTableAdapter adapter = (DayTableAdapter) monthRecycler.getAdapter();
             if (adapter == null) {
-                monthRecycler.setAdapter(new DayTableAdapter(mContext, finances));
+                adapter = new DayTableAdapter(mContext, finances);
+                monthRecycler.setAdapter(adapter);
                 monthRecycler.setItemAnimator(new DefaultItemAnimator());
             } else {
                 adapter.setFinances(finances);
                 adapter.notifyDataSetChanged();
             }
+            adapter.setDayOnClickListener(this);
+        }
+
+        @Override
+        public void onclick(int position) {
+            mOnItemClickListener.onClick(((Integer) itemView.getTag()).intValue(), position);
         }
     }
 

@@ -1,4 +1,4 @@
-package com.example.administrator.moonlightcalendar.Util;
+package com.example.administrator.moonlightcalendar.Util.myUtil;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -27,7 +27,7 @@ public class MoonLightDBHelper extends SQLiteOpenHelper {
                     "name TEXT," +
                     "_from TEXT," +
                     "price REAL," +
-                    "createdate INTEGER," +
+                    "createdate TEXT," +
                     "times INTEGER)");
             db.execSQL("CREATE TABLE cycle_project(id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "name REAL," +
@@ -38,7 +38,8 @@ public class MoonLightDBHelper extends SQLiteOpenHelper {
                     "_from TEXT," +
                     "fromapp TEXT," +
                     "price REAL," +
-                    "date INTEGER," +
+                    "date TEXT," +
+                    "time INTEGER," +
                     "out INTEGER," +
                     "pID INTEGER," +
                     "type INTEGER)");

@@ -4,7 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.example.administrator.moonlightcalendar.MainApplication;
-import com.example.administrator.moonlightcalendar.Util.MoonLightDBUtil;
+import com.example.administrator.moonlightcalendar.Util.myUtil.DateUtil;
+import com.example.administrator.moonlightcalendar.Util.myUtil.MoonLightDBUtil;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -77,7 +78,7 @@ public class Person {
         if (mPreferences == null) {
             mPreferences = MainApplication.getContext().getSharedPreferences("person", Context.MODE_PRIVATE);
             MoonLightDBUtil.init(MainApplication.getContext());
-            MoonLightDBUtil.clear();
+//            MoonLightDBUtil.clear();
         }
         if (mPerson == null) {
             mPerson = new Person();
@@ -121,7 +122,7 @@ public class Person {
         bill.price = price;
         bill.from = name;
         bill.fromApp = "今日收支";
-        bill.date = date;
+        bill.date = DateUtil.date2String(date);
         bill.save();
         //刷新数据源
         DataSource.getInstance().refreshFinance();

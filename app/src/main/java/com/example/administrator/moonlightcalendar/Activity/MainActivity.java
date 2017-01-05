@@ -1,11 +1,13 @@
 package com.example.administrator.moonlightcalendar.Activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,7 +27,9 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends BaseActivity implements RecyclerView.RecyclerListener {
+public class MainActivity extends BaseActivity implements RecyclerView.RecyclerListener, CalendarAdapter.onItemClickListener {
+
+    public static final String TAG = "MainActivity";
 
     @BindView(R.id.calendar_view)
     RecyclerView mCalendarView;
@@ -55,22 +59,21 @@ public class MainActivity extends BaseActivity implements RecyclerView.RecyclerL
     }
 
     private void initData() {
-
-        Person person = Person.getInstance();
-        person.setOriginWealth(1000);
-        person.setPayEachDay(70);
-
-        person.createCycleProject("house rent", 2100, 12, true);
-        person.createCycleProject("payment", 6300, 8, false);
-        person.createCycleProject("payment2", 1300, 25, false);
-
-        person.createNewApp("ant flower", 1, 10);
-        person.createNewApp("jd", 0, 0);
-        person.createNewApp("happy flower", 10, 20);
-
-        person.getApps().get(0).createProject("洗衣机", java.sql.Date.valueOf("2016-8-5"), 600, 6);
-        person.getApps().get(1).createProject("沙发", java.sql.Date.valueOf("2016-10-31"), 1000, 12);
-        person.getApps().get(2).createProject("电脑", java.sql.Date.valueOf("2016-7-15"), 8000, 6);
+//        Person person = Person.getInstance();
+//        person.setOriginWealth(1000);
+//        person.setPayEachDay(70);
+//
+//        person.createCycleProject("house rent", 2100, 12, true);
+//        person.createCycleProject("payment", 6300, 8, false);
+//        person.createCycleProject("payment2", 1300, 25, false);
+//
+//        person.createNewApp("ant flower", 1, 10);
+//        person.createNewApp("jd", 0, 0);
+//        person.createNewApp("happy flower", 10, 20);
+//
+//        person.getApps().get(0).createProject("洗衣机", java.sql.Date.valueOf("2016-8-5"), 600, 6);
+//        person.getApps().get(1).createProject("沙发", java.sql.Date.valueOf("2016-10-31"), 1000, 12);
+//        person.getApps().get(2).createProject("电脑", java.sql.Date.valueOf("2016-7-15"), 8000, 6);
 
     }
 
@@ -83,7 +86,9 @@ public class MainActivity extends BaseActivity implements RecyclerView.RecyclerL
     private void initView() {
         mCalendarView.setLayoutManager(new LinearLayoutManager(this));
         mCalendarView.setRecyclerListener(this);
-        mCalendarView.setAdapter(new CalendarAdapter(this, DataSource.getInstance().financesList));
+        CalendarAdapter adapter = new CalendarAdapter(this, DataSource.getInstance().financesList);
+        adapter.setOnItemClickListener(this);
+        mCalendarView.setAdapter(adapter);
     }
 
     @Override
@@ -112,5 +117,13 @@ public class MainActivity extends BaseActivity implements RecyclerView.RecyclerL
     @Override
     public void onViewRecycled(RecyclerView.ViewHolder holder) {
 
+    }
+
+    @Override
+    public void onClick(int section, int position) {
+        List<List<Finance>> lists = DataSource.getInstance().financesList;
+        Finance finance = lists.get(section).get(position);
+        finance.fillList();
+        Log.d(TAG, "onClick: section:"+section+" "+"position:"+position);
     }
 }

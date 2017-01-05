@@ -1,4 +1,4 @@
-package com.example.administrator.moonlightcalendar.Util;
+package com.example.administrator.moonlightcalendar.Util.myUtil;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -10,10 +10,10 @@ import com.example.administrator.moonlightcalendar.model.App;
 import com.example.administrator.moonlightcalendar.model.Bill;
 import com.example.administrator.moonlightcalendar.model.Person;
 
+import java.security.acl.Group;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.CRC32;
 
 /**
  * Created by Administrator on 2016/12/9 0009.
@@ -132,7 +132,7 @@ public class MoonLightDBUtil {
             contentValues.put("_from", project.getFrom());
             contentValues.put("price", project.getPrice());
             contentValues.put("times", project.getTimes());
-            contentValues.put("createdate", project.getCreateDate().getTime());
+            contentValues.put("createdate", project.getCreateDate());
             db.insert("project", null, contentValues);
             db.setTransactionSuccessful();
         } finally {
@@ -147,9 +147,10 @@ public class MoonLightDBUtil {
             contentValues.put("_from", bill.from);
             contentValues.put("fromapp", bill.fromApp);
             contentValues.put("price", bill.price);
-            contentValues.put("date", bill.date.getTime());
+            contentValues.put("date", bill.date);
             contentValues.put("out", bill.out ? 1 : 0);
             contentValues.put("type", bill.type);
+            contentValues.put("time", bill.time);
             db.insert("bill", null, contentValues);
             db.setTransactionSuccessful();
         } finally {
@@ -268,7 +269,7 @@ public class MoonLightDBUtil {
             contentValues.put("_from", project.getFrom());
             contentValues.put("price", project.getPrice());
             contentValues.put("times", project.getTimes());
-            contentValues.put("createdate", project.getCreateDate().getTime());
+            contentValues.put("createdate", project.getCreateDate());
             db.update("project", contentValues, where, args);
             db.setTransactionSuccessful();
         } finally {
@@ -302,9 +303,10 @@ public class MoonLightDBUtil {
             contentValues.put("_from", bill.from);
             contentValues.put("fromapp", bill.fromApp);
             contentValues.put("price", bill.price);
-            contentValues.put("date", bill.date.getTime());
+            contentValues.put("date", bill.date);
             contentValues.put("out", bill.out ? 1 : 0);
             contentValues.put("type", bill.type);
+            contentValues.put("time", bill.time);
             db.update("bill", contentValues, where, args);
             db.setTransactionSuccessful();
         } finally {
@@ -315,13 +317,13 @@ public class MoonLightDBUtil {
     /**
      * 查
      */
-    public static List<Bill> queryBills(String where, String[] args) {
-        String orderBy = "date asc";
+    public static List<Bill> queryBills(String where, String[] args, String groupBy) {
+        String orderBy = "time asc";
         List<Bill> bills = new ArrayList<>();
         if (db == null) {
             return bills;
         }
-        Cursor cursor = db.query("bill", null, where, args, null, null, orderBy);
+        Cursor cursor = db.query("bill", null, where, args, groupBy, null, orderBy);
         if (cursor.moveToFirst()) {
             do {
                 Bill bill = new Bill();
@@ -330,9 +332,10 @@ public class MoonLightDBUtil {
                 bill.from = cursor.getString(cursor.getColumnIndex("_from"));
                 bill.fromApp = cursor.getString(cursor.getColumnIndex("fromapp"));
                 bill.price = cursor.getFloat(cursor.getColumnIndex("price"));
-                bill.date = new Date(cursor.getLong(cursor.getColumnIndex("date")));
+                bill.date = cursor.getString(cursor.getColumnIndex("date"));
                 bill.out = cursor.getInt(cursor.getColumnIndex("out")) == 1;
                 bill.type = cursor.getInt(cursor.getColumnIndex("type"));
+                bill.time = cursor.getLong(cursor.getColumnIndex("time"));
                 bills.add(bill);
             } while (cursor.moveToNext());
         }
@@ -340,24 +343,24 @@ public class MoonLightDBUtil {
         return bills;
     }
 
-    public static List<App.Project> queryProject(String where, String[] args) {
+    public static List<App.Project> queryProject(String where, String[] args, String groupBy) {
         String orderBy = "createdate asc";
         List<App.Project> projects = new ArrayList<>();
         if (db == null) {
             return projects;
         }
-        Cursor cursor = db.query("project", null, where, args, null, null, orderBy);
+        Cursor cursor = db.query("project", null, where, args, groupBy, null, orderBy);
         if (cursor.moveToFirst()) {
             do {
                 App.Project project = new App.Project();
-                project.setCreateDate(new Date(cursor.getLong(cursor.getColumnIndex("createdate"))));
+                project.setCreateDate(cursor.getString(cursor.getColumnIndex("createdate")));
                 project.setId(cursor.getInt(cursor.getColumnIndex("id")));
                 project.setName(cursor.getString(cursor.getColumnIndex("name")));
                 project.setFrom(cursor.getString(cursor.getColumnIndex("_from")));
                 project.setPrice(cursor.getFloat(cursor.getColumnIndex("price")));
                 project.setTimes(cursor.getInt(cursor.getColumnIndex("times")));
                 project.getBills().clear();
-                project.getBills().addAll(queryBills("pID=?", new String[]{String.valueOf(project.getId())}));
+                project.getBills().addAll(queryBills("pID=?", new String[]{String.valueOf(project.getId())}, null));
                 projects.add(project);
             } while (cursor.moveToNext());
         }
@@ -378,7 +381,7 @@ public class MoonLightDBUtil {
                 app.setCreateBillDay(cursor.getInt(cursor.getColumnIndex("createbillday")));
                 app.setPayBillDay(cursor.getInt(cursor.getColumnIndex("paybillday")));
                 app.getProjects().clear();
-                app.getProjects().addAll(queryProject("_from=?", new String[]{app.getName()}));
+                app.getProjects().addAll(queryProject("_from=?", new String[]{app.getName()}, null));
                 apps.add(app);
             } while (cursor.moveToNext());
         }

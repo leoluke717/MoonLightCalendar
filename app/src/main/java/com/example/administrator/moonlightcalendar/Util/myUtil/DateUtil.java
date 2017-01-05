@@ -1,4 +1,6 @@
-package com.example.administrator.moonlightcalendar.Util;
+package com.example.administrator.moonlightcalendar.Util.myUtil;
+
+import com.example.administrator.moonlightcalendar.Util.TimeUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -11,20 +13,17 @@ import java.util.Date;
 public class DateUtil {
 
     public static final int DAY_MILLIS = 24 * 60 * 60 * 1000;
+    public static final String DAY_FORMAT = "yyyy-MM-dd";
 
     /**
      * 转化为时间string
      * */
-    public static String convertDateToString(long time) {
-        Date date = new java.sql.Date(time*1000);
-        SimpleDateFormat format;
-        if (System.currentTimeMillis() - time < DAY_MILLIS) {
-            format = new SimpleDateFormat("HH:mm");
-        } else {
-           format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        }
-        String dateStr = format.format(date);
-        return dateStr;
+    public static String date2String(Date date) {
+        return TimeUtils.date2String(date, DAY_FORMAT);
+    }
+
+    public static Date string2Date(String dateStr) {
+        return TimeUtils.string2Date(dateStr, DAY_FORMAT);
     }
 
     /**
