@@ -9,6 +9,7 @@ import com.example.administrator.moonlightcalendar.Util.myUtil.DateUtil;
 import com.example.administrator.moonlightcalendar.Util.myUtil.MoonLightDBUtil;
 import com.example.administrator.moonlightcalendar.adapter.CalendarAdapter;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -27,7 +28,7 @@ import java.util.Map;
 /**
  * 每日
  */
-public class Finance {
+public class Finance implements Serializable{
 
     float billsMoney;//账单总金额
     float totalMoney;//目前剩余金额

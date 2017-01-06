@@ -125,5 +125,10 @@ public class MainActivity extends BaseActivity implements RecyclerView.RecyclerL
         Finance finance = lists.get(section).get(position);
         finance.fillList();
         Log.d(TAG, "onClick: section:"+section+" "+"position:"+position);
+        Intent intent = new Intent(this, FinanceActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("finance", finance);
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 }

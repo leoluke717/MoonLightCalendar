@@ -2,13 +2,14 @@ package com.example.administrator.moonlightcalendar.model;
 
 import com.example.administrator.moonlightcalendar.Util.myUtil.MoonLightDBUtil;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by Administrator on 2016/12/15 0015.
  */
 
-public class Bill {
+public class Bill implements Serializable{
 
     public static final int TYPE_DEBT = 0;//欠款，一般不更改
     public static final int TYPE_CYCLE = 1;//周期性的支出或收入

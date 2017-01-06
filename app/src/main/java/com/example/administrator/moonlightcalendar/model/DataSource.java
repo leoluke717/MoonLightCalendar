@@ -122,6 +122,7 @@ public class DataSource implements SQLiteTransactionListener {
                 if (finance.readOnly ||
                         (DateUtil.string2Date(finance.date).getTime() < time &&
                                 !finance.date.equals(DateUtil.date2String(new java.sql.Date(time))))) {
+                    finance.setFinanceColor(Color.rgb(192, 192, 192));
                     continue;
                 }
                 finance.setBillsMoney(0);
