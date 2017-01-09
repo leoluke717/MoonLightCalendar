@@ -78,7 +78,7 @@ public class Person {
         if (mPreferences == null) {
             mPreferences = MainApplication.getContext().getSharedPreferences("person", Context.MODE_PRIVATE);
             MoonLightDBUtil.init(MainApplication.getContext());
-//            MoonLightDBUtil.clear();
+            MoonLightDBUtil.clear();
         }
         if (mPerson == null) {
             mPerson = new Person();
@@ -96,6 +96,21 @@ public class Person {
         apps.clear();
         apps.addAll(MoonLightDBUtil.queryApp(null, null));
         cycleProjects.addAll(MoonLightDBUtil.queryCycleProject(null, null));
+
+        setOriginWealth(1000);
+        setPayEachDay(70);
+
+        createCycleProject("house rent", 2100, 12, true);
+        createCycleProject("payment", 6300, 8, false);
+        createCycleProject("payment2", 1300, 25, false);
+
+        createNewApp("ant flower", 1, 10);
+        createNewApp("jd", 0, 0);
+        createNewApp("happy flower", 10, 20);
+
+        getApps().get(0).createProject("洗衣机", java.sql.Date.valueOf("2016-8-5"), 600, 6);
+        getApps().get(1).createProject("沙发", java.sql.Date.valueOf("2016-10-31"), 1000, 12);
+        getApps().get(2).createProject("电脑", java.sql.Date.valueOf("2016-7-15"), 8000, 6);
     }
 
     public void createCycleProject(String name, float price, int day, boolean out) {
@@ -133,10 +148,6 @@ public class Person {
         apps.add(app);
         app.save();
     }
-
-    /**
-     * Created by Administrator on 2016/12/15 0015.
-     */
 
     public static class CycleProject {
         private int id;

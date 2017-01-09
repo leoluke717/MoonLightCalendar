@@ -6,6 +6,8 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.example.administrator.moonlightcalendar.R;
 import com.example.administrator.moonlightcalendar.adapter.FinanceListAdapter;
@@ -22,6 +24,8 @@ public class FinanceActivity extends BaseActivity {
 
     @BindView(R.id.financeList)
     RecyclerView mFinanceList;
+    @BindView(R.id.text)
+    TextView mText;
     private Finance mFinance;
 
     public Finance getFinance() {
@@ -30,6 +34,8 @@ public class FinanceActivity extends BaseActivity {
 
     public void setFinance(Finance finance) {
         mFinance = finance;
+        mText.setText("" + finance.getTotalMoney());
+        mText.setTextColor(finance.getFinanceColor());
     }
 
     @Override
@@ -40,8 +46,8 @@ public class FinanceActivity extends BaseActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        initView();
         initData();
+        initView();
     }
 
     private void initData() {
@@ -53,5 +59,21 @@ public class FinanceActivity extends BaseActivity {
     private void initView() {
         mFinanceList.setLayoutManager(new LinearLayoutManager(this));
         mFinanceList.setAdapter(new FinanceListAdapter(this, mFinance.getBillsMap()));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                break;
+            default:
+                menuItemSelected(item);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    protected void menuItemSelected(MenuItem item) {
     }
 }
