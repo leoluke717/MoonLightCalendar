@@ -31,6 +31,6 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         android:tint="@color/colorPrimaryDark"
-        app:srcCompat="@android:drawable/ic_popup_sync"/>
+        app:srcCompat="@android:drawable/ic_input_add"/>
 
 </android.support.design.widget.CoordinatorLayout>

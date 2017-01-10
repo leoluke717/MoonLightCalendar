@@ -67,11 +67,6 @@ public class App {
     }
 
     public void createProject(String name, Date createDate, float price, int times) {
-        for (Project project : projects) {
-            if (project.getName().equals(name)) {
-                return;
-            }
-        }
         Project project = new Project();
         project.from = this.name;
         project.createDate = DateUtil.date2String(createDate);
@@ -111,8 +106,6 @@ public class App {
             bill.pID = project.id;
             bill.fromApp = this.name;
             float price = project.price / project.times;
-            BigDecimal b = new BigDecimal(price);
-            price = b.setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
             bill.price = price;
             bill.date = DateUtil.date2String(calendar.getTime());
             bill.time = calendar.getTimeInMillis();
@@ -147,8 +140,6 @@ public class App {
             bill.pID = project.id;
             bill.fromApp = this.name;
             float price = project.price / project.times;
-            BigDecimal b = new BigDecimal(price);
-            price = b.setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
             bill.price = price;
             bill.date = DateUtil.date2String(calendar.getTime());
             bill.time = calendar.getTimeInMillis();

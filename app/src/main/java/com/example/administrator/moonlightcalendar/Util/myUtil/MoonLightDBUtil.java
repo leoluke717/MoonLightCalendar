@@ -10,6 +10,7 @@ import com.example.administrator.moonlightcalendar.model.App;
 import com.example.administrator.moonlightcalendar.model.Bill;
 import com.example.administrator.moonlightcalendar.model.Person;
 
+import java.math.BigDecimal;
 import java.security.acl.Group;
 import java.sql.Date;
 import java.util.ArrayList;
@@ -323,7 +324,7 @@ public class MoonLightDBUtil {
         if (db == null) {
             return bills;
         }
-        Cursor cursor = db.query("bill", null, where, args, groupBy, null, orderBy);
+        Cursor cursor = db.query("bill", null, where, args, null, null, orderBy);
         if (cursor.moveToFirst()) {
             do {
                 Bill bill = new Bill();
@@ -331,7 +332,9 @@ public class MoonLightDBUtil {
                 bill.id = cursor.getInt(cursor.getColumnIndex("id"));
                 bill.from = cursor.getString(cursor.getColumnIndex("_from"));
                 bill.fromApp = cursor.getString(cursor.getColumnIndex("fromapp"));
-                bill.price = cursor.getFloat(cursor.getColumnIndex("price"));
+                BigDecimal b = new BigDecimal(cursor.getFloat(cursor.getColumnIndex("price")));
+                float price = b.setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
+                bill.price = price;
                 bill.date = cursor.getString(cursor.getColumnIndex("date"));
                 bill.out = cursor.getInt(cursor.getColumnIndex("out")) == 1;
                 bill.type = cursor.getInt(cursor.getColumnIndex("type"));

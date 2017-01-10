@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.example.administrator.moonlightcalendar.R;
 import com.example.administrator.moonlightcalendar.model.Bill;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,10 +44,16 @@ public class FinanceListAdapter extends RecyclerView.Adapter {
         Set<String> keySet = billsMap.keySet();
         for (String key : keySet) {
             List<Bill> bills = billsMap.get(key);
-            billsList.add(key);
+            StringBuilder builder = new StringBuilder(key);
+            float total = 0;
+            billsList.add(builder);
             for (Bill bill : bills) {
                 billsList.add(bill);
+                total += bill.price;
             }
+            BigDecimal b = new BigDecimal(total);
+            total = b.setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
+            builder.append("总价：" + total);
         }
     }
 
@@ -62,7 +69,7 @@ public class FinanceListAdapter extends RecyclerView.Adapter {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof TitleViewHolder) {
-            ((TitleViewHolder) holder).setTitle(((String) billsList.get(position)));
+            ((TitleViewHolder) holder).setTitle(billsList.get(position).toString());
         } else {
             ((ContentViewHolder) holder).setBill((Bill) billsList.get(position));
         }
@@ -70,7 +77,7 @@ public class FinanceListAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemViewType(int position) {
-        return (billsList.get(position) instanceof String) ? TYPE_SECTION : TYPE_CELL;
+        return (billsList.get(position) instanceof StringBuilder) ? TYPE_SECTION : TYPE_CELL;
     }
 
     @Override
@@ -113,7 +120,10 @@ public class FinanceListAdapter extends RecyclerView.Adapter {
 
         public void setBill(Bill bill) {
             mTextName.setText(bill.from);
-            mTextPrice.setText("" + bill.price);
+            StringBuilder builder = new StringBuilder();
+            builder.append(bill.out ? "-" : "+");
+            builder.append(bill.price);
+            mTextPrice.setText(builder.toString());
         }
     }
 }

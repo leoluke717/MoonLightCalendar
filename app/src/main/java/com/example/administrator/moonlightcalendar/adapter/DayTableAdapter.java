@@ -12,6 +12,7 @@ import com.example.administrator.moonlightcalendar.R;
 import com.example.administrator.moonlightcalendar.Util.myUtil.DateUtil;
 import com.example.administrator.moonlightcalendar.model.Finance;
 
+import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.List;
 
@@ -96,7 +97,9 @@ public class DayTableAdapter extends RecyclerView.Adapter {
             dayText.setText(String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)));
             dayText.setTextColor(finance.getFinanceColor());
             dayText.setVisibility(finance.isReadOnly() ? View.INVISIBLE : View.VISIBLE);
-            mBillText.setText(String.valueOf(finance.getBillsMoney()));
+            BigDecimal b = new BigDecimal(finance.getBillsMoney());
+            float total = b.setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
+            mBillText.setText(String.valueOf(total));
             mBillText.setTextColor(finance.getBillsColor());
             mBillText.setVisibility(finance.getBillsMoney() == 0 ? View.INVISIBLE : View.VISIBLE);
             mRlDay.setClickable(!finance.isReadOnly());
